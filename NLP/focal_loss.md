@@ -19,6 +19,6 @@ focal loss中，(1-P<sub>t</sub>)是残差（对负例而言残差就是P<sub>t<
 参考paper中的曲线，gamma越大，loss越陡，对错误分类的样本的权重增强效果就越明显，因此越强调错误分类的样本（或越弱化正确分类的样本），则gamma应该越大，gamma与正负例比例并没有本质上的关系。如果只调整gamma并不能解决正负例准确率失衡的问题，则需要调节alpha的值，正例比例越小，alpha越大。<br><br>
 ![Pt与FL loss的关系](../images/NLP/focal_loss/fl_curv.png)<br><br>
 #### 参考文献
-[Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002)
-[Focal Loss](https://blog.csdn.net/u014380165/article/details/77019084)
-[何恺明大神的「Focal Loss」，如何更好地理解？](https://zhuanlan.zhihu.com/p/32423092)
+[Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002)<br>
+[Focal Loss](https://blog.csdn.net/u014380165/article/details/77019084)<br>
+[何恺明大神的「Focal Loss」，如何更好地理解？](https://zhuanlan.zhihu.com/p/32423092)<br>
