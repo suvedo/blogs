@@ -1,3 +1,4 @@
+[*<<返回主页*](../index.md)
 ### [LeetCode. 456 132 Pattern] https://leetcode.com/problems/132-pattern/description/
 
 ### 题目描述：
