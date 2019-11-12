@@ -17,10 +17,13 @@
  
 removeRange(int left, int right):如果对象里没有任何区间，直接返回。 否则，利用map<int, int>的lower_bound(int)函数查找第一个左区间大于或者等于left位置iter（时间复杂度是log(n)），接下来分三种情况：
 1. 如果iter == map::end，说明所有左区间都小于left（包括最后一个区间）,此时a)如果最后一个区间的右区间小于等于left，直接返回即可；b)如果最后一个区间的右区间小于等于right,只需将最后一个右区间的改为left即可；c)如果最后一个区间的右区间小于right，除了将最后一个右区间的改为left，还有插入```[right, 最后一个区间的右区间)```到对象中。
-2. 如果iter == map::begin,说明在iter之前没有任何区间，此时从iter开始迭代区间，直到iter == map::end 或者 iter的左区间大于等于left。迭代过程中如果发现当前区间与```[left, right)```没有交集，则跳过此区间，如果相交，可分为以下四种情况:（当前区间的左区间用first表示，当前区间的右区间用second表示）
-a) 如果first <= left && second > right，插入```[second, right)```当对象中，并删除当前区间；
-b) 如果first <= left && second <= right，删除当前区间即可；
-c) 如果first > left && second <= right，将当前区间的右区间改为left即可；
+2. 如果iter == map::begin,说明在iter之前没有任何区间，此时从iter开始迭代区间，直到iter == map::end
+                                                                                                                                                                                                                                                                                                                                                                                                               或者
+                                                                                                                                                                                                                                                                                                                                                                                                               iter的左区间大于等于left。迭代过程中如果发现当前区间与```[left,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                right)```没有交集，则跳过此区间，如果相交，可分为以下四种情况:（当前区间的左区间用first表示，当前区间的右区间用second表示）<br>
+a) 如果first <= left && second > right，插入```[second, right)```当对象中，并删除当前区间；<br>
+b) 如果first <= left && second <= right，删除当前区间即可；<br>
+c) 如果first > left && second <= right，将当前区间的右区间改为left即可；<br>
 d) 如果first > left && second > right，将```[right, second)```插入对象中，并将当前区间的右区间值改为left。
 3. iter在除以上两种情况外的位置，此时iter前的一个区间可能与```[left, right)```也有交集，所以先将iter--，然后在执行步骤2的操作即可。
     
