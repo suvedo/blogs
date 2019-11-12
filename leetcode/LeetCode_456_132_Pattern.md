@@ -17,7 +17,7 @@ _方法一：Binary Search_</br>
 set保存所有搜索过的值，即set中保存的是当前下标后面的所有值，利用二分搜索查找set中是否存在大于mini\[i\]小于nums\[i\]的数，
 如果存在，返回true，否则继续搜索。
 
-'''
+```
 class Solution {
 public:
     bool find132pattern(vector<int>& nums) {
@@ -40,7 +40,7 @@ public:
         return false;
     }
 };
-'''
+```
 时间复杂度：O(nlogn)，空间复杂度：O(n)</br></br>
 
 _方法二：stack_</br>
