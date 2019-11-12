@@ -1,4 +1,4 @@
-[返回](../index.md)
+[返回](index.md)
 ## [LeetCode 715. Range Module](https://leetcode.com/problems/range-module/description/)
 
 题目要求高效地实现区间的添加，删除和查询操作。
