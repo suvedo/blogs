@@ -1,3 +1,4 @@
+[返回](../index.md)
 ## [LeetCode 715. Range Module](https://leetcode.com/problems/range-module/description/)
 
 题目要求高效地实现区间的添加，删除和查询操作。
@@ -28,7 +29,7 @@ queryRange(int left, int right)：如果对象里没有任何区间，返回fals
 2. 如果iter == map::begin,情况与1相同，只需考察第一个区间的右区间是否大于等于right，是则返回true，否则返回false;
 3. iter在除以上两种情况外的位置，此时iter前的一个区间可能与```[left, right)```也有交集，除了考察当前区间是否包含```[left, right)```以外， 还有考察iter的前一个区间是否包含```[left, right)```。
  
-``` 
+```
     class RangeModule {
       map<int, int> range;
     public:
