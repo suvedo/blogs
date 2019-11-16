@@ -53,6 +53,8 @@ Encoder和Decoder的输入均是经过预训练的embedding矩阵转换而来的
 由上述网络结构可以看出，各个token之间其实是无序的，也就是说可以把输入看做是一个集合，而不是一个序列，而真正的输入是一个有序序列，因此需要对输入的相对和绝对位置关系进行建模，即在Encoder和Decoder的输入加入position embedding（矩阵相加）。论文尝试了使用模型去学习position embedding，也尝试了直接固定position的特征，发现两者差距不大，固定的position embedding表示如下：<br>
 ![trm_position_embed](../images/NLP/2_attention_transformer/trm_position_embed.png)<br>
 pos表示token的位置，i表示position embedding的维度，针对不同的维度，各个pos构成了周期不同的正弦波(周期2pi到1000\*2pi)，由于sin(pos +k) = cos(k)sin(pos) + sin(k)cos(pos)，即位置(pos+k)的postion embeding 可以表示为位置pos的线性加权，因此论文认为这种positon embedding建模了相对位置关系，实际实验也验证了这一点。<br>
+#### 总结
+在传统的seq2seq模型中加入attention机制后，模型性能的得到了提升，但是rnn+attention的方式依然存在不可并发训练、特征提取能力不够强的问题，而transformer抛弃了rnn里的依赖限制，只采用attention的方式，序列间的依赖关系采用position embedding建模，这样的网络结构可以并发训练，并且特征提取能力比rnn/lstm/cnn等都要强，在机器翻译等多个领域取得SOTA效果。transformer的成功，正式标识着rnn时代的终结，transformer才是这个时代最强的特征抽取器！<br>
 #### 参考文献
 [Neural Machine Translation by Jointly Learning to Align and Translate](https://arxiv.org/abs/1409.0473)<br>
 [Attention in RNN](https://zhuanlan.zhihu.com/p/42724582)<br>
