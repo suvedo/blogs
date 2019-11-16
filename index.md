@@ -1,4 +1,4 @@
-## suvedo的技术博客
+## 梁华的技术博客
 ### NLP
 #### [正负例样本失衡及focal loss](NLP/focal_loss.md)
 ### 数据结构
