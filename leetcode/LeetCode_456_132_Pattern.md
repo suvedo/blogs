@@ -1,4 +1,5 @@
-[*<<返回主页*](../index.md)
+[*<<返回主页*](../index.md)<br><br>
+**本文为作者原创，转载请注明出处**<br>
 ### [LeetCode. 456 132 Pattern] https://leetcode.com/problems/132-pattern/description/
 
 ### 题目描述：
