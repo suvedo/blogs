@@ -54,8 +54,8 @@ Encoder和Decoder的输入均是经过预训练的embedding矩阵转换而来的
 ![trm_position_embed](../images/NLP/2_attention_transformer/trm_position_embed.png)<br>
 pos表示token的位置，i表示position embedding的维度，针对不同的维度，各个pos构成了周期不同的正弦波(周期2pi到1000\*2pi)，由于sin(pos +k) = cos(k)sin(pos) + sin(k)cos(pos)，即位置(pos+k)的postion embeding 可以表示为位置pos的线性加权，因此论文认为这种positon embedding建模了相对位置关系，实际实验也验证了这一点。<br>
 #### 参考文献
-[Neural Machine Translation by Jointly Learning to Align and Translate](https://arxiv.org/abs/1409.0473)
-[Attention in RNN](https://zhuanlan.zhihu.com/p/42724582)
-[Attention Is All You Need](https://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)
-[The Illustrated Transformer](http://jalammar.github.io/illustrated-transformer/)
+[Neural Machine Translation by Jointly Learning to Align and Translate](https://arxiv.org/abs/1409.0473)<br>
+[Attention in RNN](https://zhuanlan.zhihu.com/p/42724582)<br>
+[Attention Is All You Need](https://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)<br>
+[The Illustrated Transformer](http://jalammar.github.io/illustrated-transformer/)<br>
 
