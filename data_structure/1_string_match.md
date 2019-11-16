@@ -18,8 +18,8 @@ AC自动机本质是字典树+KMP。相比KMP匹配算法，运行一次AC自动
 接下来看看怎么构造AC自动机（字典树+KMP）：<br><br>
 1）首先利用字典集合B里的所有词构造一颗字典树；<br>
 2）字典树的每个节点除了孩子节点的指针、是否为根节点外，还包括了fail指针，fail指针是指在当前节点的所有孩子节点中都匹配失败后要从AC自动机的什么位置开始匹配，具体来说fail指针指向根节点到当前节点组成的子串的最大匹配前缀后缀；<br>
-2.1）fail指针构建过程：对1）中构建好的字典树进行广度优先遍历，从队列中弹出一个节点cur，节点cur的fail指针已经构建好，现在来构建cur节点的所有孩子节点的fail指针，看cur.fail.child\[i\]是否等于cur.child\[i\]，如果等于，则cur.child\[i\].fail = cur.fail.child\[i\]，否则继续看cur.fail.fail的child\[i\]是否等于cur.child\[i\]，直到fail等于根节点；<br>
-2.2）构建fail指针跟KMP算法中构造next数组的思想一样，但是是构造多个字符串的next数组，所以构建fail指针的方法既有有动态规划的思想，又有遍历树的思想（层次遍历）；<br><br>
+&nbsp&nbsp&nbsp&nbsp2.1）fail指针构建过程：对1）中构建好的字典树进行广度优先遍历，从队列中弹出一个节点cur，节点cur的fail指针已经构建好，现在来构建cur节点的所有孩子节点的fail指针，看cur.fail.child\[i\]是否等于cur.child\[i\]，如果等于，则cur.child\[i\].fail = cur.fail.child\[i\]，否则继续看cur.fail.fail的child\[i\]是否等于cur.child\[i\]，直到fail等于根节点；<br>
+&nbsp&nbsp&nbsp&nbsp2.2）构建fail指针跟KMP算法中构造next数组的思想一样，但是是构造多个字符串的next数组，所以构建fail指针的方法既有有动态规划的思想，又有遍历树的思想（层次遍历）；<br><br>
 构建好自动机之后，就可以A中的字符串m进行匹配了，具体过程如下：<br><br>
 1）取出m的当前字符（从0开始往后遍历），以及自动机的当前节点（初始时刻为root节点）;<br>
 2）若当前字符与当前节点的某个孩子节点child\[i\]匹配，则看孩子节点child\[i\]、孩子节点child\[i\]的fail指针指向的节点child\[i\].fail、child\[i\].fail.fail.....(直到fail为null)是否是某个字符串的结尾，如果是，则匹配到了字典里的词；然后将匹配到的孩子节点赋为当前节点，继续执行2）;<br>
