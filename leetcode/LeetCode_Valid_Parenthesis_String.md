@@ -1,4 +1,5 @@
-[*<<返回主页*](../index.md)
+[*<<返回主页*](../index.md)<br><br>
+**本文为作者原创，转载请注明出处**<br>
 ### [LeetCode 678. Valid Parenthesis String](https://leetcode.com/problems/valid-parenthesis-string/description/)
 
 **题目描述：**输入一个仅包含```'(',')'```和```'*'```的字符串，判断字符串左右括号是否匹配，其中```'*'```可表示左括号，右括号或者为空。
