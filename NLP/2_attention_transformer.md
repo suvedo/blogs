@@ -13,16 +13,16 @@ Encoder采用双向RNN结构，每个时刻的隐层输出是前向rnn隐层和�
 ##### Decoder
 如果说encoder跟传统seq2seq结构并没有本质上的区别的话，Decoder跟传统seq2seq则发生了本质变化，这也是Attention机制的精华所在，即在Decode时同时学习对齐模型(align model)和翻译模型(translate model)。<br>
 ###### 对齐模型
-对齐模型学习的是输入时刻j和输出时刻i的匹配关系alpha(i,j)，j与i匹配程度越高，alpha(i,j)值越大，表示如下：
+对齐模型学习的是输入时刻j和输出时刻i的匹配关系alpha(i,j)，j与i匹配程度越高，alpha(i,j)值越大，表示如下：<br>
 ![attn_dec_1](../images/NLP/2_attention_transformer/attn_dec_1.png)<br>
 ![attn_dec_2](../images/NLP/2_attention_transformer/attn_dec_2.png)<br>
-其中，Si-1是decoder在i的上一时刻的输出，hj是encoder在j时刻的隐层拼接，a是前馈神经网络，alpha(i, j)是i时刻在时刻j上的概率分布，表示为softmax的输出。<br>
-##### 翻译模型
+其中，S<sub>i-1</sub>是decoder在i的上一时刻的输出，h<sub>j</sub>是encoder在j时刻的隐层拼接，a是前馈神经网络，alpha(i, j)是i时刻在时刻j上的概率分布，表示为softmax的输出。<br>
+###### 翻译模型
 翻译模型即解码过程，以encoder输出、decoder上一时刻解码结果、对齐模型输出为输入，输出当前时刻的解码结果，模型表示如下：<br>
-![attn_dec_3](../images/NLP/2_attention_transformer/attn_dec_2.png)<br>
-![attn_dec_4](../images/NLP/2_attention_transformer/attn_dec_2.png)<br>
-![attn_dec_5](../images/NLP/2_attention_transformer/attn_dec_2.png)<br>
-Ci是encoder隐层的加权和，其中权重就是对齐模型的输出，Si和Si-1是decoder当前时刻和上一时刻的隐层输出，yi和yi-1是decoder当前时刻和上一时刻的解码结果。<br>
+![attn_dec_3](../images/NLP/2_attention_transformer/attn_dec_3.png)<br>
+![attn_dec_4](../images/NLP/2_attention_transformer/attn_dec_4.png)<br>
+![attn_dec_5](../images/NLP/2_attention_transformer/attn_dec_5.png)<br>
+C<sub>i</sub>是encoder隐层的加权和，其中权重就是对齐模型的输出，S<sub>i</sub>和S<sub>i-1</sub>是decoder当前时刻和上一时刻的隐层输出，y<sub>i</sub>和y<sub>i-1</sub>是decoder当前时刻和上一时刻的解码结果。<br>
 #### transformer
 目前主流的序列转换模型采用复杂的CNN或者RNN结构来构建encoder和decoder，若加上连接encoder和decoder的attention机制后，模型效果得到了进一步提升。但这些模型由于存在记忆约束(memory constraint)，因此无法跨样本并行训练，导致训练时间较长，虽然目前有一些工作(factorization trick 或 conditional computation)可以很大程度上提升计算效率，但由序列的限制依然存在，或者诸如ConS2S/ByteNet等使用CNN抽取序列的隐藏特征表示，但是这些模型很难学习长距离的依赖。transformer抛弃了encoder和decoder中的RNN或CNN结构，只单纯的采用attention机制，提升训练速度的同时拥有更好的性能。<br>
 ##### 模型结构
