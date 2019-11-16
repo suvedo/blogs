@@ -5,4 +5,4 @@
 #### Attention in RNN
 Bengio等人在2014年[Neural machine translation by jointly learning to align and translate](https://arxiv.org/abs/1409.0473)中提出Attention机制。<br><br>
 传统的RNN在t时刻的输入是h(t-1)和x(t)，encoder在最后时刻输出一个针对input sequence的特征表示，decoder在生成output sequence时输入该特征表示和上一时刻的解码结果。在长句子翻译任务中，decoder并不关心input sequence的整个句子，而只关心input sequence的某一些局部特征，因此Bengio等人提出Attention机制，学习input sequence和output sequence的对齐(Align)和翻译(Translate)关系，在编码过程中，将原句子编码成特征向量的集合，在解码时，每个时刻会从该特征集合中选择一个子集用于生成解码结果。模型结构如下图所示：<br>
-![attention in RNN](images/NLP/2_attention_transformer/attention_in_rnn.png)<br>
+![attention in RNN](../images/NLP/2_attention_transformer/attention_in_rnn.png)<br>
