@@ -1,6 +1,8 @@
 ## suvedo的技术博客
 ### NLP
 #### [正负例样本失衡及focal loss](NLP/focal_loss.md)
+### 数据结构
+#### [字符串匹配的三种场景及其解法](data_structure/1_string_match.md)
 ### LeetCode
 #### [LeetCode 715. Range Module](leetcode/LeetCode_715_Range_Module.md)
 #### [LeetCode 678. Valid Parenthesis String](leetcode/LeetCode_Valid_Parenthesis_String.md)
