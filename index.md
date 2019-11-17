@@ -1,6 +1,7 @@
 ## 梁华的技术博客
 ### NLP
 #### [机器学习一般流程总结](NLP/3_ml_process.md)
+#### [序列标注之Bi-LSTM+CRF](NLP/4_tagging_bi_lstm_crf.md)
 #### [深入浅出Attention和Transformer](NLP/2_attention_transformer.md)
 #### [正负例样本失衡及focal loss](NLP/focal_loss.md)
 ### 数据结构
