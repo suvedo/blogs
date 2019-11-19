@@ -52,7 +52,7 @@ transformer层包括Feed Forward子层，即前馈网络层，前馈网络对每
 Encoder和Decoder的输入均是经过预训练的embedding矩阵转换而来的，每个token的对应d<sub>model</sub>维的embedding向量，由前馈网络的输出可以看出Encoder的输出也是d<sub>model</sub>维，而在Decoder输出层，模型并没有去重新学习一个linear层，而是复用了预训练的embedding矩阵（实际上是embedding矩阵的转置），将Decoder的输出转化vacab_size维，最后经过softmax分类。<br><br>
 由上述网络结构可以看出，各个token之间其实是无序的，也就是说可以把输入看做是一个集合，而不是一个序列，而真正的输入是一个有序序列，因此需要对输入的相对和绝对位置关系进行建模，即在Encoder和Decoder的输入加入position embedding（矩阵相加）。论文尝试了使用模型去学习position embedding，也尝试了直接固定position的特征，发现两者差距不大，固定的position embedding表示如下：<br>
 ![trm_position_embed](../images/NLP/2_attention_transformer/trm_position_embed.png)<br>
-pos表示token的位置，i表示position embedding的维度，针对不同的维度，各个pos构成了周期不同的正弦波(周期2pi到1000\*2pi)，由于sin(pos +k) = cos(k)sin(pos) + sin(k)cos(pos)，即位置(pos+k)的postion embeding 可以表示为位置pos的线性加权，因此论文认为这种positon embedding建模了相对位置关系，实际实验也验证了这一点。<br>
+pos表示token的位置，i表示position embedding的维度，针对不同的维度，各个pos构成了周期不同的正弦波(周期2pi到1000\*2pi)，由于sin(pos +k) = cos(k)sin(pos) + sin(k)cos(pos)或cos(pos + k）= cos(k)cos(pos) - sin(k)sin(pos)，即位置(pos+k)的position embeding 可以表示为位置pos的线性加权，因此论文认为这种positon embedding建模了相对位置关系，实际实验也验证了这一点。<br>
 #### 总结
 在传统的seq2seq模型中加入attention机制后，模型性能得到了提升，但是rnn+attention的方式依然存在不可并发训练、特征提取能力不够强的问题，而transformer抛弃了rnn里的依赖限制，只采用attention的方式，加入额外的position embedding建模序列间的依赖关系，这样的网络结构可以并行训练，并且特征提取能力比rnn/lstm/cnn等都要强，在机器翻译等多个领域取得SOTA效果。transformer的成功，正式标识着rnn时代的终结，transformer时代的到来！<br>
 #### 参考文献
