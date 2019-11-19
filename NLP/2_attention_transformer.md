@@ -16,7 +16,7 @@ Encoder采用双向RNN结构，每个时刻的隐层输出是前向rnn隐层和�
 对齐模型学习的是输入时刻j和输出时刻i的匹配关系alpha(i,j)，j与i匹配程度越高，alpha(i,j)值越大，表示如下：<br>
 ![attn_dec_1](../images/NLP/2_attention_transformer/attn_dec_1.png)<br>
 ![attn_dec_2](../images/NLP/2_attention_transformer/attn_dec_2.png)<br>
-其中，s<sub>i-1</sub>是decoder在i的上一时刻的输出，h<sub>j</sub>是encoder在j时刻的隐层拼接，a是前馈神经网络，alpha(i, j)是i时刻在时刻j上的概率分布，表示为softmax的输出。<br>
+其中，s<sub>i-1</sub>是decoder在i的上一时刻的输出，h<sub>j</sub>是encoder在j时刻的隐层拼接，a是前馈神经网络，alpha(i, j)是j时刻在时刻i上的概率分布，表示为softmax的输出。<br>
 ###### 翻译模型
 翻译模型即解码过程，以encoder输出、decoder上一时刻解码结果、对齐模型输出为输入，输出当前时刻的解码结果，模型表示如下：<br>
 ![attn_dec_3](../images/NLP/2_attention_transformer/attn_dec_3.png)<br>
