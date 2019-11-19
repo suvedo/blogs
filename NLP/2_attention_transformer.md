@@ -43,7 +43,7 @@ Q与K的转置相乘其实就是每个token的q向量（所有token的q向量合
 网络中还有一个Mask(opt.)单元，是一个可选单元，加上这个单元后Multi-Head Attention即变成了Masked Multi-Head Attention，用在decoder中防止在解码时访问到当前位置之后的信息，而在Encoder中不需要这个单元。<br><br>
 2）多头attention<br><br>
 ![trm_multi_head](../images/NLP/2_attention_transformer/trm_multi_head.png)<br>
-论文还发现使用多个并行的比例点乘attention效果更好，也就是上图的多头attention(Multi-Head Attention)。与单头attention一样，同样需要经过projection层将input sequence embedding转换成Q/K/V，只不过同样的project操作进行h = 8次（8头attention），每个project操作有自己不同的参数矩阵。8个不同的Q/K/V输入到8个单头attention网络中，得到8个(input_sequence_len, d<sub>v</sub>)的输出，将这8个输出拼接起来，然后经过一个线性层，使得最后的输出size与输入(input_sequence_len, dmodel)保持一致（这样才能在Add&Norm子层执行加的操作）。<br><br>
+论文还发现使用多个并行的比例点乘attention效果更好，也就是上图的多头attention(Multi-Head Attention)。与单头attention一样，同样需要经过projection层将input sequence embedding转换成Q/K/V，只不过同样的project操作进行h = 8次（8头attention），每个project操作有自己不同的参数矩阵。8个不同的Q/K/V输入到8个单头attention网络中，得到8个(input_sequence_len, d<sub>v</sub>)的输出，将这8个输出拼接起来，然后经过一个线性层，使得最后的输出size与输入(input_sequence_len, d<sub>model</sub>)保持一致（这样才能在Add&Norm子层执行加的操作）。<br><br>
 多头attention的d<sub>k</sub>/d<sub>v</sub>分别减小为单头attention的1/h倍，所以多头attention的计算量其实与单头attention一样，但是多头attention模型更复杂，能建立更复杂的attention关系，每个头的输入表征了input sequence embedding的不同子空间，最终使得多头模型效果更好。<br>
 ##### 前馈网络
 transformer层包括Feed Forward子层，即前馈网络层，前馈网络对每个token(或position)来说是一模一样的，参数也一样，所以这一层可以看做是一个kernel size为1的卷积层。具体来说Feed Forward是两个ReLU子层，输入和输出的size均为dmodel，而两个隐层size为2048。公式表示如下：
