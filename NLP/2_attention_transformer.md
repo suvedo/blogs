@@ -24,7 +24,7 @@ Encoder采用双向RNN结构，每个时刻的隐层输出是前向rnn隐层和�
 ![attn_dec_5](../images/NLP/2_attention_transformer/attn_dec_5.png)<br>
 c<sub>i</sub>是encoder隐层的加权和，其中权重就是对齐模型的输出，s<sub>i</sub>和s<sub>i-1</sub>是decoder当前时刻和上一时刻的隐层输出，y<sub>i</sub>和y<sub>i-1</sub>是decoder当前时刻和上一时刻的解码结果。<br>
 #### transformer
-目前主流的序列转换模型采用复杂的CNN或者RNN结构来构建encoder和decoder，若加上连接encoder和decoder的attention机制后，模型效果得到了进一步提升。但这些模型由于存在记忆约束(memory constraint)，因此无法跨样本并行训练，导致训练时间较长，虽然目前有一些工作(factorization trick 或 conditional computation)可以很大程度上提升计算效率，但由于序列的限制依然存在，或者诸如ConS2S/ByteNet等使用CNN抽取序列的隐藏特征表示，但是这些模型很难学习长距离的依赖。transformer抛弃了encoder和decoder中的RNN或CNN结构，只单纯的采用attention机制，提升训练速度的同时拥有更好的性能。<br>
+目前主流的序列转换模型采用复杂的CNN或者RNN结构来构建encoder和decoder，若加上连接encoder和decoder的attention机制后，模型效果得到了进一步提升。但这些模型由于存在记忆约束(memory constraint)，因此无法跨样本并行训练，导致训练时间较长，虽然目前有一些工作(factorization trick 或 conditional computation)可以很大程度上提升计算效率，但是序列的限制依然存在，或者诸如ConS2S/ByteNet等使用CNN抽取序列的隐藏特征表示，但是这些模型很难学习长距离的依赖。transformer抛弃了encoder和decoder中的RNN或CNN结构，只单纯的采用attention机制，提升训练速度的同时拥有更好的性能。<br>
 ##### 模型结构
 ###### Encoder and Decoder Stacks
 ![trm_net](../images/NLP/2_attention_transformer/trm_net.png)<br>
