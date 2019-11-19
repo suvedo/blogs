@@ -29,7 +29,7 @@ c<sub>i</sub>是encoder隐层的加权和，其中权重就是对齐模型的输
 ###### Encoder and Decoder Stacks
 ![trm_net](../images/NLP/2_attention_transformer/trm_net.png)<br>
 上图是transformer的模型结构，可以分为encoder（左边）和decoder（右边）两部分。<br><br>
-encoder的输入层是Input Embedding和Positional Encoding的和（向量相加），特征抽取层是由N个结构相同的层堆叠而成（上图最左边的Nx表示了堆叠结构），下面层的输出作为上面层的输入，直到最后一个层的输出才作为decoder的输入（中间层的输出不作为decoder的输入）。每个子层由Multi-Head Attention和Feed Forward两个子层组成，另外还可以看到有Add&Norm的结构单元，这个其实就是对两个子层的输出的标准化，表示为LayerNorm(x + Sublayer(x))，关于Multi-Head Attention/Feed Forward/LayerNorm和Positional Encoding等细节稍后祥述。<br><br>
+encoder的输入层是Input Embedding和Positional Encoding的和（向量相加），特征抽取层是由N个结构相同的层堆叠而成（上图最左边的Nx表示了堆叠结构），下面层的输出作为上面层的输入，直到最后一个层的输出才作为decoder的输入（中间层的输出不作为decoder的输入）。每层由Multi-Head Attention和Feed Forward两个子层组成，另外还可以看到有Add&Norm的结构单元，这个其实就是对两个子层的输出的标准化，表示为LayerNorm(x + Sublayer(x))，关于Multi-Head Attention/Feed Forward/LayerNorm和Positional Encoding等细节稍后祥述。<br><br>
 decoder的输入层也是Output Embedding和Positional Encoding的和，特征抽取层也是由N个结构相同的层堆叠而成（最右边的Nx表示了这种堆叠结构），除了下面层的输出作为上面层的输入外，encoder的输出也会作为每一层的输入（注意：每一层都要把encoder的输出作为输入，其实也不难理解，因为每层结构一样，如果哪一层不把encoder的输出作为输入，那每层的内部结构就不一样了），最后一层的输出经过一个线性层，最后分类。decoder内部由一个相比encoder来说独有的Masked Multi-Head Attention单元，这个单元主要是为了不让decoder看到当前解码结果之后的信息。<br>
 ###### Attention结构
 [Attention Is All You Need](https://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)这篇论文中提到过很多与attention相关的名词，初看论文时会被这些attention的概念和关系迷惑，本文首先对这些attention做一个梳理。<br><br>
