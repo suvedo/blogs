@@ -1,6 +1,6 @@
 [*<<返回主页*](../index.md)<br><br>
 **本文为作者原创，转载请注明出处**<br>
-### [LeetCode. 456 132 Pattern] https://leetcode.com/problems/132-pattern/description/
+### [LeetCode. 456 132 Pattern](https://leetcode.com/problems/132-pattern/description/)
 
 ### 题目描述：
 找出整型数组nums是否存在“132”模式，（“132”模式即，存在i < j < k，满足nums[i] < nums[k] < nums[j]），
