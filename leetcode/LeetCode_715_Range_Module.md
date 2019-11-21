@@ -13,7 +13,7 @@
   
   addRange(int left, int right)：如果对象里没有任何区间，则直接插入要加的区间即可。否则，利用map<int, int>的lower_bound(int)函数查找第一个左区间大于或者等于left位置iter（时间复杂度是log(n)），接下来分三种情况：
 1. 如果iter == map::end，说明所有左区间都小于left（包括最后一个区间）,此时a)如果最后一个区间的右区间小于left，直接插入```[left, right)```到末尾即可；b)否则，将最后一个区间的右区间只改为右区间和right中较大的一个即可。
-2. 如果iter == map::begin,说明在iter之前没有任何区间，此时从iter开始迭代区间，直到iter == map::end 或者iter的左区间大于left。迭代过程中如果发现当前区间与```[left, right)```没有交集且不相邻，则跳过此区间，如果相交或者相邻，则将left赋为left和当前左区间中较小的一个，right赋为right和当前右区间较大的一个，并删除当前区间。迭代结束之后将```[left, right)```加入到map中。
+2. 如果iter == map::begin,说明在iter之前没有任何区间，此时从iter开始迭代区间，直到iter == map::end 或者iter的左区间大于right。迭代过程中如果发现当前区间与```[left, right)```没有交集且不相邻，则跳过此区间，如果相交或者相邻，则将left赋为left和当前左区间中较小的一个，right赋为right和当前右区间较大的一个，并删除当前区间。迭代结束之后将```[left, right)```加入到map中。
 3. iter在除以上两种情况外的位置，此时iter前的一个区间可能与```[left, right)```也有交集，所以先将iter--，然后在执行步骤2的操作即可。
  
 removeRange(int left, int right):如果对象里没有任何区间，直接返回。 否则，利用map<int, int>的lower_bound(int)函数查找第一个左区间大于或者等于left位置iter（时间复杂度是log(n)），接下来分三种情况：
