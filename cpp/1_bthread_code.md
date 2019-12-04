@@ -1,3 +1,6 @@
+[*<<返回主页*](../index.md)<br><br>
+**本文为作者原创，转载请注明出处**<br>
+
 ### bthread源码阅读
 bthread是为brpc设计的m:n线程库，其中m表示bthread（用户线程）的数量，n表示pthread（worer线程）的数量，一般m远大于n。通过bthread线程库，brpc可以同时兼顾scalability和cache locality，scalability通过pthread间偷bthread实现，cache locality通过同一个pthread中运行不同的bthread实现。用户通过bthread_start_background()、bthread_start_urgent()等接口即可创建并执行一个线程。<br><br>
 #### int bthread_start_background(bthread_t tid, const bthread_attr_t* attr, void* (*fn)(void*), void* arg) __THROW
@@ -24,3 +27,6 @@ bthread是为brpc设计的m:n线程库，其中m表示bthread（用户线程）�
 3、某个线程或taskGroup被唤醒之后，首先去remote_queue中pop任务，然后在去别的taskGroup中偷任务<br><br>
 4、去别的taskGroup中偷任务的时候，随机取一个taskGroup，首先从这个taskGroup的runqueue中偷，然后从remotequeue中pop；<br><br>
 5、singal的时候，先singal自己属于的那个parklot，如果唤醒的线程不够，在singal另外三个parkinglots<br><br>
+
+#### 参考文献
+[brpc](https://github.com/apache/incubator-brpc)
