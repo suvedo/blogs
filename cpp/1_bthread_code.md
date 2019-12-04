@@ -4,7 +4,7 @@
 ### bthread源码阅读
 bthread是为brpc设计的m:n线程库，其中m表示bthread（用户线程）的数量，n表示pthread（worer线程）的数量，一般m远大于n。通过bthread线程库，brpc可以同时兼顾scalability和cache locality，scalability通过pthread间偷bthread实现，cache locality通过同一个pthread中运行不同的bthread实现。用户通过bthread_start_background()、bthread_start_urgent()等接口即可创建并执行一个线程。<br><br>
 #### int bthread_start_background(bthread_t tid, const bthread_attr_t* attr, void* (*fn)(void*), void* arg) __THROW
-    1、函数描述： Create bthread `fn(args)' with attributes `attr' and put the identifier into 'tid'<br><br>
+    1、函数描述： Create bthread \'fn(args)\' with attributes \'attr\' and put the identifier into \'tid\'<br><br>
     2、每个pthread线程有个独立的__thread TaskGroup tls_task_group对象（tls = thread local storage：利用__thread修饰，__thread变量每个线程有一份独立实例），这个对象维护了当前pthread的任务队列等信息；如果该pthread线程未曾创建TaskGroup（即__thread bthread::tls_task_group指针为空，没有任何worker），则进入bthread::start_from_non_worker(tid, attr, fn, arg)，否则调用bthread::tls_task_group->start_background<false>(tid, attr, fn, arg);<br><br>
         2.1、bthread::start_from_non_worker(tid, attr, fn, arg)：<br><br>
             2.1.1、首先获取TaskControl (TaskControl* c = get_or_new_task_control())，TaskControl管理所有的pthread线程，负责bthread在各pthread之间调度与协调等工作，程序维护一个全局的TaskControl，这个TaskControl所有pthread线程共享，不是thread local的，每个线程访问时将其指针转换为原子变量的指针；如果TaskControl不为空，则直接返回，否则新建一个：对全局TaskControl加锁，新建并初始化TaskControl（调用TaskControl->init(concurrency)，concurrency表示pthread数量，即配置的并发数），初始化TaskControl的步骤：<br><br>
