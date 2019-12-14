@@ -27,24 +27,24 @@ xgboost的目标函数可以表示如下：<br><br>
 配置完参数后运行sh run.sh即可训练、验证并测试模型，程序会保存训练好的模型，将训练好的模型拷贝到deploy/c++目录下即可在线预测<br><br>
 #### 在线预测
 deploy/c++目录下运行make编译代码，然后运行./test_xgb_cls即可预测demo，预测之前先配置conf/xgb_cls.conf，包括模型路径、特征维度、树数量；若要把在线预测代码集成在自己的代码中，只需要拷贝 include/, lib/, xgboost_classifier.h, xgboost_classifier.cpp即可<br><br>
-### 使用心得
+### xgboost使用心得
 #### 调参心得
-booster：指明使用的基分类器，默认为gbtree，还可以选择gblinear和dart。gbtree则表示CART树，gblinear表示线性分类器，dart也是使用CART作为基分类器，只不过对各个CART树使用类似与nn里的drop-out，可以配置rate_drop来指明drop-out rate；一般情况下，都使用默认的gbtree;<br><br>
-eta：收缩因子，或者学习率，每颗树的结果乘以eta为样本在这颗树的最终得分，eta一般小于1，可以给后续的基分类器更大的学习空间，也可以避免过拟合，如果发现树的颗树比较少，可以适当调低eta；默认值为0.3；<br><br>
-gamma：参数中的gamma不是公式中的L1正则化系数（L1正则化系数为alpha），而是最小的分类损失降低，只有当节点分裂带来的损失大于gamma时才进行分裂，可以有效避免过拟合；默认值为0，注意：因为有正则化项的存在，分裂节点不一定能带来正向的损失减小，所以gamma为0不一定表示所有的分裂均满足要求（均能分裂）；<br><br>
+booster：指明使用的基分类器，默认为gbtree，还可以选择gblinear和dart。gbtree则表示CART树，gblinear表示线性分类器，dart也是使用CART作为基分类器，只不过对各个CART树使用类似于nn里的drop-out，可以配置rate_drop来指明drop-out的比例；一般情况下，都使用默认的gbtree;<br><br>
+eta：收缩因子，或者学习率，每颗树的结果乘以eta为样本在这颗树的最终得分，eta一般小于1，eta越小，后续基分类器的学习空间就更大，同时也可以避免过拟合，如果发现树的颗树比较少，可以适当调低eta；默认值为0.3；<br><br>
+gamma：参数中的gamma不是公式中的L1正则化系数（L1正则化系数对应的为alpha），而是最小的分类损失降低，只有当节点分裂带来的损失降低大于gamma时才进行分裂，可以有效避免过拟合；默认值为0，**注意**：因为有正则化项的存在，分裂节点不一定能带来正向的损失减小，所以gamma为0不一定表示所有的分裂均满足要求（均能分裂）；<br><br>
 max_depth：树的最大深度，这个比较好理解；默认值为6，如果过拟合严重，可以适当减小该参数值；<br><br>
-subsample：生成下一颗树时训练样本的采样率，类似随机森林，默认为1，如果样本数量比较大或者过拟合严重，可以考虑增大该参数值；<br><br>
+subsample：生成下一颗树时训练样本的采样率，类似随机森林，默认为1，如果样本数量比较大或者过拟合严重，可以考虑减小该参数值；<br><br>
 colsample_bytree：生成每一颗树时对特征的采样率，类似随机森林，默认为1<br><br>
-colsample_bylevel：生成每一层时特征的采用率，在每颗树的特征的基础上采样，colsample_bytree*colsample_bylevel，默认值为1<br><br>
-colsample_bynode：节点分裂时特征的采样率，在每颗树、每层的基础上采样，colsample_bytree*colsample_bylevel*colsample_bynode，默认值为1<br><br>
+colsample_bylevel：生成每一层时特征的采用率，在每颗树的特征的基础上采样，colsample_bytree\*colsample_bylevel，默认值为1<br><br>
+colsample_bynode：节点分裂时特征的采样率，在每颗树、每层的基础上采样，colsample_bytree\*colsample_bylevel\*colsample_bynode，默认值为1<br><br>
 lambda：叶子节点输出值的L2正则化系数，默认为1<br><br>
 alpha：叶子节点输出值的L1正则化系数，默认为0，即不做L1正则化系数<br><br>
-objective：目标函数，默认为reg:squarederror，可以取binary:logistic/multi:softmax/rank:pairwise等；我在最先调参的时候使用reg:squarederror，而线上的xgboost版本比较老旧，不支持此目标函数，因为只能换成binary:logistic重新训练，换成binary:logistic并且early-stop的eval_metric选用auc反倒效果变好，分析原因为：我的任务中正负例样本比例悬殊比较大，使用rmse、error等对正负例敏感的eval_metric反倒效果好，auc的含义及计算方法见[机器学习一般流程总结](../NLP/3_ml_process.md)；<br><br>
+objective：目标函数，默认为reg:squarederror，可以取binary:logistic/multi:softmax/rank:pairwise等；我在最先调参的时候使用reg:squarederror，而线上的xgboost版本比较老旧，不支持此目标函数，因此只能换成binary:logistic重新训练，换成binary:logistic并且early-stop的eval_metric选用auc反倒效果变好，分析原因为：我的任务中正负例样本比例悬殊比较大，使用rmse、error等对正负例敏感的eval_metric反倒效果不好，auc的含义及计算方法见[机器学习一般流程总结](../NLP/3_ml_process.md)；<br><br>
 eval_metric：验证集的metric，在训练的日志中能看到train和eval的metric；根据目标函数设置默认值；<br><br>
-enable_early_stop：是否使用early-stop，一般都需要使用验证集做训练时的验证和早停，避免过拟合，也可以通过早停的情况了解自己的模型是否过拟合了；如果在xgb.train()的参数中enable了早停，则必须要指定evals列表；<br><br>
-early_stopping_rounds：eval_metric在early_stopping_rounds轮没有增加或减少则停止训练，一般设置为10轮<br><br>
+enable_early_stop：是否使用early-stop，一般都需要使用验证集做训练时的验证和早停避免过拟合，也可以通过早停的情况了解自己的模型是否过拟合了；如果在xgb.train()的参数中指名了使用早停，则必须要指定evals列表；<br><br>
+early_stopping_rounds：eval_metric在early_stopping_rounds轮没有增加或减少则停止训练，一般设置为10轮；<br><br>
 #### xgboost有哪些优点
-我最先使用nn做分类问题，nn比较擅长特征抽取，而我的任务的特征基本上是抽取好的，不需要nn的特征抽取能力，且nn训练慢，必须依赖gpu（公司内部训练工具导致），任务排队比较耗时；后来选用xgboost，训练速度极快，且不依赖gpu，效果与nn基本持平；另外还有一点xgboost可以计算每个特征的重要性（get_fscore()或get_score()接口），这对于特征筛选、模型可解释性、模型透明、模型调优等都有好处；计算特征的重要性的原理：通过指明的important_type计算，比如important_type=weight，则重要性就是该特征被用于节点分裂的次数，important_type=gain则表示特征分裂带来的平均收益；xgboost还可以以明文的形式保存树模型，方便模型可视化和调优；<br><br>
+我一开始使用nn做分类问题，nn比较擅长特征抽取，而我的任务的特征基本上是抽取好的，不需要nn的特征抽取能力，且nn训练慢，必须依赖gpu（公司内部训练工具导致），任务排队现象严重，效果低下；后来选用xgboost，训练速度极快，且不依赖gpu，效果与nn基本持平；另外还有一点xgboost可以计算每个特征的重要性（get_fscore()或get_score()接口），这对于特征筛选、模型可解释性、模型透明、模型调优等都有好处；计算特征的重要性的原理：通过指明的important_type计算，比如important_type=weight时，则重要性就是该特征被用于节点分裂的次数，important_type=gain时就是特征分裂带来的平均收益；xgboost还可以以明文的形式保存树模型，方便模型可视化和调优；<br><br>
 ### 几个有深度的问题
 问题一：特征分裂点怎么找的？类别特征怎么处理？<br><br>
 问题二：孩子节点的值计算都是平均值吗？还是针对不同的loss有不同的计算方法？<br><br>
