@@ -1,32 +1,32 @@
 [*<<返回主页*](../index.md)<br><br>
 **本文为作者原创，转载请注明出处**<br>
-本文结合作者对xgboost原理的理解及使用xgboost做分类问题的经验，讲解xgboost在分类问题中的应用。内容主要包括xgboost原理简述、xgboost_classifer代码、xgboost使用心得和几个深入的问题<br>
+本文结合作者对xgboost原理的理解及使用xgboost做分类问题的经验，讲解xgboost在分类问题中的应用。内容主要包括xgboost原理简述、xgboost_classifer代码、xgboost使用心得和几个有深度的问题<br>
 ### xgboost原理简述
-xgboost基本思想是叠加多个基分类器的结果组合成一个强分类器，叠加方法就是各个分类器的结果做加法，在生成下一个基分类器的时候，目标是拟合历史分类器结果之和与label之间的残差，预测的时候是将每个基分类器结果相加；每个基分类器都是弱分类器，目前xgboost主要支持的基分类器有CART回归树、线性分类器；<br><br>
+xgboost基本思想是叠加多个弱分类器的结果组合成一个强分类器，叠加方法是各个基分类器的结果做加法，在生成下一个基分类器的时候，目标是拟合历史分类器结果之和与label之间的残差，预测的时候是将每个基分类器结果相加；每个基分类器都是弱分类器，目前xgboost主要支持的基分类器有CART回归树、线性分类器；<br><br>
 #### CART回归树
-CART(Classification And Regression Tree)回归树，顾名思义，是一个回归模型，同[C4.5](https://zh.wikipedia.org/wiki/C4.5%E7%AE%97%E6%B3%95)分类树一样，均是二叉树模型；父节点包含所有的样本，每次分裂的时候将父节点的样本划分到左子树和右子树中，划分的原则是找到最优的特征的最优划分点使得目标函数最小，CART回归树的目标函数是平方误差，而C4.5的目标函数是信息增益（划分后的信息增益最大）；
-对CART回归树来说，孩子节点中样本的预测值是所有样本预测值的平均值（why？因为CART的目标函数是平方误差，是的平方误差最小的预测值就是平均值，可以证明一下），
-而C4.5决策树中孩子节点的预测值一般采用投票法；在构建树的时候，两者都采用贪心算法，即每次节点分裂时找本次所有分裂点中目标函数最小的分裂点，该方法不一定能找到全局最优的树结构，但能有效的降低计算量<br>
+CART(Classification And Regression Tree)回归树，顾名思义，是一个回归模型，同[C4.5](https://zh.wikipedia.org/wiki/C4.5%E7%AE%97%E6%B3%95)分类树一样，均是二叉树模型；父节点包含所有的样本，每次分裂的时候将父节点的样本划分到左子树和右子树中，划分的原则是找到最优特征的最优划分点使得目标函数最小，CART回归树的目标函数是平方误差，而C4.5的目标函数是信息增益（划分后的信息增益最大）；
+对CART回归树来说，孩子节点中样本的预测值是所有样本label的平均值（why？因为CART的目标函数是平方误差，使得平方误差最小的预测值就是平均值，可以证明一下），
+而C4.5决策树中孩子节点的预测值一般采用投票法；在构建树的时候，两者都采用贪心算法，即每次节点分裂时找本次所有分裂点中目标函数最小的分裂点，该方法不一定能找到全局最优的树结构，但能有效的降低计算量；<br>
 #### xgboost
-多数情况下，将CART回归树作为xgboost的基分类器（tree-based xgbooster），xgboost不断生成新的CART回归树，每生成一颗树即是在学习一个新函数，这个函数将每个样本映射到唯一确定的一个叶子节点中，所有叶子节点中的样本共享相同的预测值，函数的目标则是去拟合样本的残差，损失函数可以是与CART回归树相同的均方误差，也可以是交叉熵（一般用于分类问题中）、pairwise loss（一般用于rank问题中）；<br><br>
-xgboost的目标函数可以表示如下：<br>
+多数情况下，xgboost将CART回归树作为基分类器（tree-based xgbooster）；xgboost不断生成新的CART回归树，每生成一颗树即是在学习一个新的函数，这个函数将每个样本映射到唯一确定的一个叶子节点中，所有叶子节点中的样本共享相同的预测值，函数的目标则是去拟合所有叶子节点中样本的历史残差；损失函数可以是与CART回归树相同的均方误差，也可以是交叉熵（一般用于分类问题中）或pairwise loss（一般用于rank问题中）；<br><br>
+xgboost的目标函数可以表示如下：<br><br>
 ![xgb_obj_1](../images/NLP/6_xgboost_classifier/xgb_obj_1.png)<br>
-其中第一项是训练损失（平方误差、交叉熵等），第二项是正则化损失（L1、L2等）；为了便于计算，对上式进行泰勒展开，并取0/1/2阶项作为目标函数的近似表示：<br>
+其中第一项是训练损失（平方误差、交叉熵等），第二项是正则化损失（L1、L2等）；为了便于计算，对上式进行泰勒展开，并取0/1/2阶项作为目标函数的近似表示：<br><br>
 ![xgb_obj_2](../images/NLP/6_xgboost_classifier/xgb_obj_2.png)<br>
-将正则化项（L1和L2正则化项均不为0，其系数分别为gamma和lambda）带入上式，并进一步化简（将各个叶子节点中样本综合）得到如下：<br>
-![xgb_obj_3](../images/NLP/6_xgboost_classifier/xgb_obj_3.png)<br>
-不难发现，这个函数是关于叶子节点权重w<sub>j</sub>的二次函数，其最值和最值点分别为：<br>
+将正则化项（L1和L2正则化项均不为0，其系数分别为gamma和lambda）带入上式，并进一步化简（将各个叶子节点中样本合并）得到如下：<br>
+![xgb_obj_3](../images/NLP/6_xgboost_classifier/xgb_obj_3.png)<br><br>
+不难发现，这个函数是关于叶子节点权重w<sub>j</sub>的二次函数，其最值点和最值分别为：<br><br>
 ![xgb_obj_4](../images/NLP/6_xgboost_classifier/xgb_obj_4.png)<br>
 这样近似及化简之后，针对每个候选划分能快速的计算其孩子节点预测值和目标函数值；<br><br>
-更详细的推导请参考[XGBoost: A Scalable Tree Boosting System](https://arxiv.org/pdf/1603.02754v1.pdf)<br><br>和陈天奇的演讲ppt;<br><br>
-### 代码使用方法
-代码地址：https://github.com/suvedo/xgboost_classifier
+更详细的推导请参考[XGBoost: A Scalable Tree Boosting System](https://arxiv.org/pdf/1603.02754v1.pdf)和陈天奇的演讲ppt;<br><br>
+### xgboost_classifer代码
+代码地址：[https://github.com/suvedo/xgboost_classifier](https://github.com/suvedo/xgboost_classifier)<br>
 #### 线下训练
-首先按照[xgboost官方教程](https://xgboost.readthedocs.io/en/latest/build.html)clone源码，并安装python包。（不详述）；<br><br>
-配置train_dir/config.py中的参数，包括：1）XGBoostConifg中的与xgboost模型相关的参数（参数含义详见[XGBoost Parameters](https://xgboost.readthedocs.io/en/latest/parameter.html)，2）Config中的与输入输出及其它训练相关的参数；<br><br>
-配置完参数运行sh run.sh即可训练、验证并测试模型，程序会保存训练好的模型，将训练好的模型拷贝到deploy/c++目录下即可在线预测<br><br>
+首先按照[xgboost官方教程](https://xgboost.readthedocs.io/en/latest/build.html)clone源码，并安装python包。（不详述）<br><br>
+配置train_dir/config.py中的参数，包括：1）XGBoostConifg中的与xgboost模型相关的参数（参数含义详见下文的调参心得)；2）Config中的与输入输出及其它训练相关的参数；<br><br>
+配置完参数后运行sh run.sh即可训练、验证并测试模型，程序会保存训练好的模型，将训练好的模型拷贝到deploy/c++目录下即可在线预测<br><br>
 #### 在线预测
-deploy/c++目录下运行make编译代码，然后运行./test_xgb_cls即可预测，预测之前先配置conf/xgb_cls.conf，包括模型路径、特征维度、树数量；若要把在线预测代码集成在自己的代码中，只需要拷贝 include/, lib/, xgboost_classifier.h, xgboost_classifier.cpp即可<br><br>
+deploy/c++目录下运行make编译代码，然后运行./test_xgb_cls即可预测demo，预测之前先配置conf/xgb_cls.conf，包括模型路径、特征维度、树数量；若要把在线预测代码集成在自己的代码中，只需要拷贝 include/, lib/, xgboost_classifier.h, xgboost_classifier.cpp即可<br><br>
 ### 使用心得
 #### 调参心得
 booster：指明使用的基分类器，默认为gbtree，还可以选择gblinear和dart。gbtree则表示CART树，gblinear表示线性分类器，dart也是使用CART作为基分类器，只不过对各个CART树使用类似与nn里的drop-out，可以配置rate_drop来指明drop-out rate；一般情况下，都使用默认的gbtree;<br><br>
@@ -48,7 +48,8 @@ early_stopping_rounds：eval_metric在early_stopping_rounds轮没有增加或减
 ### 几个有深度的问题
 问题一：特征分裂点怎么找的？类别特征怎么处理？<br><br>
 问题二：孩子节点的值计算都是平均值吗？还是针对不同的loss有不同的计算方法？<br><br>
-问题三：xgboost如何并行？<br><br>
+问题三：利用泰勒展开做近似有什么作用？会对结果有多大程度的影响？
+问题④：xgboost如何并行？<br><br>
 ### 参考文献
 [xgboost官方教程](https://xgboost.readthedocs.io/en/latest/index.html)<br><br>
 [一文读懂机器学习大杀器XGBoost原理](https://zhuanlan.zhihu.com/p/40129825)<br><br>
