@@ -49,7 +49,7 @@ early_stopping_rounds：eval_metric在early_stopping_rounds轮没有增加或减
 #### 几个有深度的问题
 问题一：特征分裂点怎么找的？类别特征怎么处理？<br><br>
 问题二：孩子节点的值计算都是平均值吗？还是针对不同的loss有不同的计算方法？<br><br>
-问题三：利用泰勒展开做近似有什么作用？会对结果有多大程度的影响？
+问题三：利用泰勒展开做近似有什么作用？会对结果有多大程度的影响？<br><br>
 问题四：xgboost如何并行？<br><br>
 #### 参考文献
 [xgboost官方教程](https://xgboost.readthedocs.io/en/latest/index.html)<br><br>
