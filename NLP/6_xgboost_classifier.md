@@ -11,13 +11,13 @@ CART(Classification And Regression Tree)回归树，顾名思义，是一个回�
 ##### xgboost
 多数情况下，xgboost将CART回归树作为基分类器（tree-based xgbooster）；xgboost不断生成新的CART回归树，每生成一颗树即是在学习一个新的函数，这个函数将每个样本映射到唯一确定的一个叶子节点中，所有叶子节点中的样本共享相同的预测值，函数的目标则是去拟合所有叶子节点中样本的历史残差；损失函数可以是与CART回归树相同的均方误差，也可以是交叉熵（一般用于分类问题中）或pairwise loss（一般用于rank问题中）；<br><br>
 xgboost的目标函数可以表示如下：<br><br>
-![xgb_obj_1](../images/NLP/6_xgboost_classifier/xgb_obj_1.png)<br>
+![xgb_obj_1](../images/NLP/6_xgboost_classifier/xgb_obj_1.png)<br><br>
 其中第一项是训练损失（平方误差、交叉熵等），第二项是正则化损失（L1、L2等）；为了便于计算，对上式进行泰勒展开，并取0/1/2阶项作为目标函数的近似表示：<br><br>
-![xgb_obj_2](../images/NLP/6_xgboost_classifier/xgb_obj_2.png)<br>
+![xgb_obj_2](../images/NLP/6_xgboost_classifier/xgb_obj_2.png)<br><br>
 将正则化项（L1和L2正则化项均不为0，其系数分别为gamma和lambda）带入上式，并进一步化简（将各个叶子节点中样本合并）得到如下：<br>
 ![xgb_obj_3](../images/NLP/6_xgboost_classifier/xgb_obj_3.png)<br><br>
 不难发现，这个函数是关于叶子节点权重w<sub>j</sub>的二次函数，其最值点和最值分别为：<br><br>
-![xgb_obj_4](../images/NLP/6_xgboost_classifier/xgb_obj_4.png)<br>
+![xgb_obj_4](../images/NLP/6_xgboost_classifier/xgb_obj_4.png)<br><br>
 这样近似及化简之后，针对每个候选划分能快速的计算其孩子节点预测值和目标函数值；<br><br>
 更详细的推导请参考[XGBoost: A Scalable Tree Boosting System](https://arxiv.org/pdf/1603.02754v1.pdf)和陈天奇的演讲ppt;<br><br>
 #### xgboost_classifer代码
