@@ -18,7 +18,7 @@ xgboost的目标函数可以表示如下：<br><br>
 ![xgb_obj_3](../images/NLP/6_xgboost_classifier/xgb_obj_3.png)<br><br>
 不难发现，这个函数是关于叶子节点权重w<sub>j</sub>的二次函数，其最值点和最值分别为：<br><br>
 ![xgb_obj_4](../images/NLP/6_xgboost_classifier/xgb_obj_4.png)<br><br>
-这样近似及化简之后，针对每个候选划分能快速的计算其孩子节点预测值和目标函数值；<br><br>
+这样近似及化简之后，针对每个候选划分能快速的计算其孩子节点预测值和目标函数值，构建树的时候同样使用了贪心算法；<br><br>
 更详细的推导请参考[XGBoost: A Scalable Tree Boosting System](https://arxiv.org/pdf/1603.02754v1.pdf)和陈天奇的演讲ppt;<br><br>
 #### xgboost_classifer代码
 代码地址：[https://github.com/suvedo/xgboost_classifier](https://github.com/suvedo/xgboost_classifier)<br>
@@ -41,16 +41,25 @@ colsample_bynode：节点分裂时特征的采样率，在每颗树、每层的�
 lambda：叶子节点输出值的L2正则化系数，默认为1<br><br>
 alpha：叶子节点输出值的L1正则化系数，默认为0，即不做L1正则化系数<br><br>
 objective：目标函数，默认为reg:squarederror，可以取binary:logistic/multi:softmax/rank:pairwise等；我在最先调参的时候使用reg:squarederror，而线上的xgboost版本比较老旧，不支持此目标函数，因此只能换成binary:logistic重新训练，换成binary:logistic并且early-stop的eval_metric选用auc反倒效果变好，分析原因为：我的任务中正负例样本比例悬殊比较大，使用rmse、error等对正负例敏感的eval_metric反倒效果不好，auc的含义及计算方法见[机器学习一般流程总结](../NLP/3_ml_process.md)；<br><br>
+base_score：样本的初始得分，相当于全局偏置，默认值为0.5<br><br>
 eval_metric：验证集的metric，在训练的日志中能看到train和eval的metric；根据目标函数设置默认值；<br><br>
 enable_early_stop：是否使用early-stop，一般都需要使用验证集做训练时的验证和早停避免过拟合，也可以通过早停的情况了解自己的模型是否过拟合了；如果在xgb.train()的参数中指名了使用早停，则必须要指定evals列表；<br><br>
 early_stopping_rounds：eval_metric在early_stopping_rounds轮没有增加或减少则停止训练，一般设置为10轮；<br><br>
 ##### xgboost有哪些优点
-我一开始使用nn做分类问题，nn比较擅长特征抽取，而我的任务的特征基本上是抽取好的，不需要nn的特征抽取能力，且nn训练慢，必须依赖gpu（公司内部训练工具导致），任务排队现象严重，效果低下；后来选用xgboost，训练速度极快，且不依赖gpu，效果与nn基本持平；另外还有一点xgboost可以计算每个特征的重要性（get_fscore()或get_score()接口），这对于特征筛选、模型可解释性、模型透明、模型调优等都有好处；计算特征的重要性的原理：通过指明的important_type计算，比如important_type=weight时，则重要性就是该特征被用于节点分裂的次数，important_type=gain时就是特征分裂带来的平均收益；xgboost还可以以明文的形式保存树模型，方便模型可视化和调优；<br><br>
+我一开始使用nn做分类问题，nn比较擅长特征抽取，而我的任务的特征基本上是抽取好的，不需要nn的特征抽取能力，且nn训练慢，必须依赖gpu（公司内部训练工具导致），任务排队现象严重，效果低下；后来选用xgboost，训练速度极快，且不依赖gpu，效果与nn基本持平；另外还有一点xgboost可以计算每个特征的重要性（get_fscore()或get_score()接口），这对于特征筛选、模型可解释性、模型透明、模型调优等都有好处；计算特征的重要性的原理：通过指明的important_type计算，比如important_type=weight时，则重要性就是该特征被用于节点分裂的次数，important_type=gain时就是特征分裂带来的平均收益；xgboost还可以以明文的形式保存树模型，方便模型可视化和调优；xgboost不需要对特征做normalization；<br><br>
 #### 几个有深度的问题
-问题一：特征分裂点怎么找的？类别特征怎么处理？<br><br>
-问题二：孩子节点的值计算都是平均值吗？还是针对不同的loss有不同的计算方法？<br><br>
-问题三：利用泰勒展开做近似有什么作用？会对结果有多大程度的影响？<br><br>
-问题四：xgboost如何并行？<br><br>
+问题一：xgboost模型的参数是什么？<br><br>
+答：每颗树的树结构：针对非叶子节点则是其分裂特征及分裂点，针对叶子节点，则是其得分或者权重；或者理解成一个函数集合（参考线性booster）；<br><br>
+问题二：xgboost的梯度怎么理解？<br><br>
+答：xgboost的损失函数利用泰勒展开近似，对当前树（或函数）在0处求了一阶梯度和二阶梯度，由于是在0处求梯度，所以本质上是损失函数对历史基分类器和的梯度；<br><br>
+问题三：base_score有什么作用？<br><br>
+答：base_score永远存在，因为在生成第一颗树的时候要使用残差，即label减去base_score，如果不指明，则第一颗树的残差就是label；在对第一颗树的损失函数近似时，当前树节点的score如果越接近0，近似效果越好，因此可以选用一个base_score使得第一颗树的score尽量接近0，对于二分类问题（label为0和1），0.5是较好的选择，我猜测这也是为什么base_score的默认值是0.5的原因；<br><br>
+问题四：特征分裂点怎么找的？类别特征怎么处理？<br><br>
+答：针对连续特征值，划分点分别取所有的值（可以事先将特征值排好序），采用每个特征值进行划分；类别特征要转化为one-hot encoding，之后的划分方法与连续特征无两样；
+问题五：孩子节点的值计算都是平均值吗？还是针对不同的loss有不同的计算方法？<br><br>
+问题六：利用泰勒展开做近似有什么作用？会对结果有多大程度的影响？<br><br>
+答：首先考虑不使用泰勒展开近似时，针对每个候选分裂点，都需要计算所有要本的损失，更要命的是孩子节点的score怎么选，是否要遍历所有可能的值，遍历的话计算量可想而知，不遍历该如何保证精度，是否也需要使用近似；而使用泰勒展开近似后，将历史分类器的结果（梯度部分）与当前结果f<sub>t</sub>(x)分开，损失函数变成了关于两个孩子节点的二次函数，针对二次函数求最值，再简单不过了，在工程上也可以并行处理，针对不同的损失函数也可以很好的实现；至于对结果的影响有多大，取决于高级梯度和f<sub>t</sub>(x)有多接近0，越接近近似效果越好，就算是近似效果不好，由于是多个分类器结果的叠加，影响面也不至于很大，而模型训练时本身就要使用各种手段防止过拟合，近似是否也有防止过拟合的效果呢；<br><br>
+问题七：xgboost如何并行？<br><br>
 #### 参考文献
 [xgboost官方教程](https://xgboost.readthedocs.io/en/latest/index.html)<br><br>
 [一文读懂机器学习大杀器XGBoost原理](https://zhuanlan.zhihu.com/p/40129825)<br><br>
