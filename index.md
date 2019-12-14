@@ -4,7 +4,7 @@
 #### [字符串匹配的三种场景及其解法](data_structure/1_string_match.md)
 #### [字典树的五种实现方式](data_structure/2_trie_tree.md)
 
-### C++
+### 并行计算
 #### [bthread源码阅读](cpp/1_bthread_code.md)
 
 ### 深度学习&机器学习
