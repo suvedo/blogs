@@ -17,6 +17,8 @@ xgboost的目标函数可以表示如下：<br>
 ![xgb_obj_3](../images/NLP/6_xgboost_classifier/xgb_obj_3.png)<br>
 不难发现，这个函数是关于叶子节点权重w<sub>j</sub>的二次函数，其最值和最值点分别为：<br>
 ![xgb_obj_4](../images/NLP/6_xgboost_classifier/xgb_obj_4.png)<br>
+这样近似及化简之后，针对每个候选划分能快速的计算其孩子节点预测值和目标函数值；<br><br>
+更详细的推导请参考[XGBoost: A Scalable Tree Boosting System](https://arxiv.org/pdf/1603.02754v1.pdf)<br><br>和陈天奇的演讲ppt;<br><br>
 ### 代码使用方法
 代码地址：https://github.com/suvedo/xgboost_classifier
 #### 线下训练
