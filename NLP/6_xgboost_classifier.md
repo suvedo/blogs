@@ -1,8 +1,8 @@
 [*<<返回主页*](../index.md)<br><br>
 **本文为作者原创，转载请注明出处**<br>
-### xgboost分类器原理及应用实战
+### XGBoost分类器原理及应用实战
 本文结合作者对xgboost原理的理解及使用xgboost做分类问题的经验，讲解xgboost在分类问题中的应用。内容主要包括xgboost原理简述、xgboost_classifer代码、xgboost使用心得和几个有深度的问题<br>
-#### xgboost原理简述
+#### XGBoost原理简述
 xgboost并没有提出一种新的机器学习算法，而是基于现有的GBDT/lambdaMART等tree boosting算法在系统及算法层面（主要是系统层面）进行了改进；系统层面改进点包括：带权重的分位点分割算法(weighted quantile sketch)、稀疏特征的处理(sparsity-aware splitting)、缓存(cache-aware access)、out-of-core computation、特征并行、基于rabit的分布式训练等，这些改进使得xgboost无论是在单机训练还是分布式训练上的耗时都比pGBRT/scikit-learn/spark MLLib/R gbm等有至少几倍的提升；算法层面的改进主要包括：L1/L2正则化、目标函数二阶导的应用等；<br><br>
 boosting基本思想是叠加多个弱分类器的结果组合成一个强分类器，叠加方法是各个基分类器的结果做加法，在生成下一个基分类器的时候，目标是拟合历史分类器结果之和与label之间的残差，预测的时候是将每个基分类器结果相加；每个基分类器都是弱分类器，目前xgboost主要支持的基分类器有CART回归树、线性分类器；<br><br>
 ##### CART回归树
@@ -41,13 +41,15 @@ colsample_bylevel：生成每一层时特征的采用率，在每颗树的特征
 colsample_bynode：节点分裂时特征的采样率，在每颗树、每层的基础上采样，colsample_bytree\*colsample_bylevel\*colsample_bynode，默认值为1<br><br>
 lambda：叶子节点输出值的L2正则化系数，默认为1<br><br>
 alpha：叶子节点输出值的L1正则化系数，默认为0，即不做L1正则化系数<br><br>
+tree_method：构建树算法，候选值有exact、approx、hist、auto等，exact代表论文中的Basic Exact greedy algorithm，即每次生成孩子节点时遍历所有的特征点的所有可能的分裂点，从而找到最优分裂点；approx表示带权的分位点分割算法，由（泰勒展开后的）损失函数可以推导出每个样本的损失是带权的平方误差，其权重为二阶导数，而分位点算法是为了节省计算时间而提出的近似计算方法，将样本划分到多个bucket中，各个bucket之间有序，但bucket中的元素不需要有序，划分点就是每个bucket中最大值，使用分位点算法可以将候选划分点减小至m个（m表示bucket的个数），生成bucket的时候每个样本都是有权重的，权重为二阶导数；hist表示基于bin strategy的近似算法，具体原理还有待研究；auto表示根据数据量自动选择tree_method，数据量小时选择exact，数据量大时选择approx；<br><br>
+sketch_eps：当tree_method=approx时用于指明近似误差的大小，一般可以认为最终的bucket个数为O(1 / sketch_eps)，因此sketch_eps越小，approx越接近exact；<br><br>
 objective：目标函数，默认为reg:squarederror，即平方误差；可以取binary:logistic/multi:softmax/rank:pairwise等；我在最先调参的时候使用reg:squarederror，而线上的xgboost版本比较老旧，不支持此目标函数，因此只能换成binary:logistic重新训练，换成binary:logistic并且early-stop的eval_metric选用auc反倒效果变好，分析原因为：我的任务中正负例样本比例悬殊比较大，使用rmse、error等对正负例敏感的eval_metric反倒效果不好，auc的含义及计算方法见[机器学习一般流程总结](../NLP/3_ml_process.md)；<br><br>
 base_score：样本的初始得分，相当于全局偏置，默认值为0.5；<br><br>
 eval_metric：验证集的metric，在训练的日志中能看到train和eval的metric；候选值有rmse（均方误差根）、error（分类错误率）、auc、ndcg等；根据目标函数的不同设置默认值；<br><br>
 enable_early_stop：是否使用early-stop，一般都需要使用验证集做训练时的验证和早停避免过拟合，也可以通过早停的情况了解自己的模型是否过拟合了；如果在xgb.train()的参数中指名了使用早停，则必须要指定evals列表；<br><br>
 early_stopping_rounds：eval_metric在early_stopping_rounds轮没有增加或减少则停止训练，一般设置为10轮；<br><br>
-##### xgboost有哪些优点
-我一开始使用nn做分类问题，nn比较擅长特征抽取，而我的任务的特征基本上是抽取好的，不需要nn的特征抽取能力，且nn训练慢，必须依赖gpu（公司内部训练工具导致），任务排队现象严重，效果低下；后来选用xgboost，训练速度极快，且不依赖gpu，效果与nn基本持平；另外还有一点xgboost可以计算每个特征的重要性（get_fscore()或get_score()接口），这对于特征筛选、模型可解释性、模型透明、模型调优等都有好处；计算特征的重要性的原理：通过指明的important_type计算，比如important_type=weight时，则重要性就是该特征被用于节点分裂的次数，important_type=gain时就是特征分裂带来的平均收益；xgboost还可以以明文的形式保存树模型，方便模型可视化和调优；xgboost不需要对特征做normalization；<br><br>
+##### XGBoost有哪些优点
+我一开始使用nn做分类问题，nn比较擅长特征抽取，而我的任务的特征基本上是抽取好的，不需要nn的特征抽取能力，且nn训练慢，必须依赖gpu（公司内部训练工具导致），任务排队现象严重，效果低下；后来选用xgboost，训练速度极快，内存友好，且不依赖gpu，效果与nn基本持平；另外还有一点xgboost可以计算每个特征的重要性（get_fscore()或get_score()接口），这对于特征筛选、模型可解释性、模型透明、模型调优等都有好处；计算特征的重要性的原理：通过指明的important_type计算，比如important_type=weight时，则重要性就是该特征被用于节点分裂的次数，important_type=gain时就是特征分裂带来的平均收益，important_type=cover时就是每个节点中的所有样本的hessian值之后；xgboost还可以以明文的形式保存树模型，方便模型可视化和调优；xgboost不需要对特征做normalization；<br><br>
 #### 几个有深度的问题
 问题一：xgboost模型的参数是什么？<br><br>
 答：每颗树的树结构：针对非叶子节点则是其分裂特征及分裂点，针对叶子节点，则是其得分或者权重；或者理解成一个函数集合（参考线性booster）；<br><br>
