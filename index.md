@@ -9,7 +9,7 @@
 
 ### 深度学习&机器学习
 #### [机器学习一般流程总结](NLP/3_ml_process.md)
-#### [xgboost分类器原理、代码及使用心得](NLP/6_xgboost_classifier.md)
+#### [XGBoost分类器原理及应用实战](NLP/6_xgboost_classifier.md)
 #### [预训练词表示之word2vec(一)](NLP/4_word2vec.md)
 #### [序列标注之Bi-LSTM+CRF](NLP/4_tagging_bi_lstm_crf.md)
 #### [深入浅出Attention和Transformer](NLP/2_attention_transformer.md)
