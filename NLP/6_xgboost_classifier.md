@@ -1,9 +1,10 @@
 [*<<返回主页*](../index.md)<br><br>
 **本文为作者原创，转载请注明出处**<br>
-### xgboost分类器原理、代码及使用心得
+### xgboost分类器原理及应用实战
 本文结合作者对xgboost原理的理解及使用xgboost做分类问题的经验，讲解xgboost在分类问题中的应用。内容主要包括xgboost原理简述、xgboost_classifer代码、xgboost使用心得和几个有深度的问题<br>
 #### xgboost原理简述
-xgboost基本思想是叠加多个弱分类器的结果组合成一个强分类器，叠加方法是各个基分类器的结果做加法，在生成下一个基分类器的时候，目标是拟合历史分类器结果之和与label之间的残差，预测的时候是将每个基分类器结果相加；每个基分类器都是弱分类器，目前xgboost主要支持的基分类器有CART回归树、线性分类器；<br><br>
+xgboost并没有提出一种新的机器学习算法，而是基于现有的GBDT/lambdaMART等tree boosting算法在系统及算法层面（主要是系统层面）进行了改进；系统层面改进点包括：带权重的分位点分割算法(weighted quantile sketch)、稀疏特征的处理(sparsity-aware splitting)、缓存(cache-aware access)、out-of-core computation、特征并行、基于rabit的分布式训练等，这些改进使得xgboost无论是在单机训练还是分布式训练上的耗时都比pGBRT/scikit-learn/spark MLLib/R gbm等有至少几倍的提升；算法层面的改进主要包括：L1/L2正则化、目标函数二阶导的应用等；<br><br>
+boosting基本思想是叠加多个弱分类器的结果组合成一个强分类器，叠加方法是各个基分类器的结果做加法，在生成下一个基分类器的时候，目标是拟合历史分类器结果之和与label之间的残差，预测的时候是将每个基分类器结果相加；每个基分类器都是弱分类器，目前xgboost主要支持的基分类器有CART回归树、线性分类器；<br><br>
 ##### CART回归树
 CART(Classification And Regression Tree)回归树，顾名思义，是一个回归模型，同[C4.5](https://zh.wikipedia.org/wiki/C4.5%E7%AE%97%E6%B3%95)分类树一样，均是二叉树模型；父节点包含所有的样本，每次分裂的时候将父节点的样本划分到左子树和右子树中，划分的原则是找到最优特征的最优划分点使得目标函数最小，CART回归树的目标函数是平方误差，而C4.5的目标函数是信息增益（划分后的信息增益最大）；
 对CART回归树来说，孩子节点中样本的预测值是所有样本label的平均值（why？因为CART的目标函数是平方误差，使得平方误差最小的预测值就是平均值，可以证明一下），
