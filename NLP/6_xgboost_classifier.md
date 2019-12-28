@@ -9,8 +9,8 @@ boosting基本思想是叠加多个弱分类器的结果组合成一个强分类
 CART(Classification And Regression Tree)回归树，顾名思义，是一个回归模型，同[C4.5](https://zh.wikipedia.org/wiki/C4.5%E7%AE%97%E6%B3%95)分类树一样，均是二叉树模型；父节点包含所有的样本，每次分裂的时候将父节点的样本划分到左子树和右子树中，划分的原则是找到最优特征的最优划分点使得目标函数最小，CART回归树的目标函数是平方误差，而C4.5的目标函数是信息增益（划分后的信息增益最大）；
 对CART回归树来说，孩子节点中样本的预测值是所有样本label的平均值（why？因为CART的目标函数是平方误差，使得平方误差最小的预测值就是平均值，可以证明一下），
 而C4.5决策树中孩子节点的预测值一般采用投票法；在构建树的时候，两者都采用贪心算法，即每次节点分裂时找本次所有分裂点中目标函数最小的分裂点，该方法不一定能找到全局最优的树结构，但能有效的降低计算量；<br>
-##### xgboost
-多数情况下，xgboost将CART回归树作为基分类器（tree-based xgbooster）；xgboost不断生成新的CART回归树，每生成一颗树即是在学习一个新的函数，这个函数将每个样本映射到唯一确定的一个叶子节点中，所有叶子节点中的样本共享相同的预测值，函数的目标则是去拟合所有叶子节点中样本的历史残差；损失函数可以是与CART回归树相同的均方误差，也可以是交叉熵（一般用于分类问题中）或pairwise loss（一般用于rank问题中）；<br><br>
+##### XGBoost
+多数情况下，xgboost将CART回归树作为基分类器（tree-based booster）；xgboost不断生成新的CART回归树，每生成一颗树即是在学习一个新的函数，这个函数将每个样本映射到唯一确定的一个叶子节点中，同一叶子节点中的所有样本共享相同的预测值，函数的目标则是去拟合所有叶子节点中样本的历史残差；损失函数可以是与CART回归树相同的均方误差，也可以是交叉熵（一般用于分类问题中）或各种rank loss（用于rank问题中）；<br><br>
 xgboost的目标函数可以表示如下：<br><br>
 ![xgb_obj_1](../images/NLP/6_xgboost_classifier/xgb_obj_1.png)<br><br>
 其中第一项是训练损失（平方误差、交叉熵等），第二项是正则化损失（L1、L2等）；为了便于计算，对上式进行泰勒展开，并取0/1/2阶项作为目标函数的近似表示：<br><br>
@@ -19,31 +19,31 @@ xgboost的目标函数可以表示如下：<br><br>
 ![xgb_obj_3](../images/NLP/6_xgboost_classifier/xgb_obj_3.png)<br><br>
 不难发现，这个函数是关于叶子节点权重w<sub>j</sub>的二次函数，其最值点和最值分别为：<br><br>
 ![xgb_obj_4](../images/NLP/6_xgboost_classifier/xgb_obj_4.png)<br><br>
-这样近似及化简之后，针对每个候选划分能快速的计算其孩子节点预测值和目标函数值，构建树的时候同样使用了贪心算法；<br><br>
-更详细的推导请参考[XGBoost: A Scalable Tree Boosting System](https://arxiv.org/pdf/1603.02754v1.pdf)和陈天奇的演讲ppt;<br><br>
+这样近似及化简之后，针对每个候选划分能快速计算其孩子节点的预测值和目标函数值，构建树的时候同样使用了贪心算法；<br><br>
+更详细的推导请参考[XGBoost: A Scalable Tree Boosting System](https://arxiv.org/pdf/1603.02754v1.pdf)和tianqi的ppt;<br><br>
 #### xgboost_classifer代码
 代码地址：[https://github.com/suvedo/xgboost_classifier](https://github.com/suvedo/xgboost_classifier)<br>
 ##### 线下训练
-首先按照[xgboost官方教程](https://xgboost.readthedocs.io/en/latest/build.html)clone源码，并安装python包。（不详述）<br><br>
+首先按照[xgboost官方教程](https://xgboost.readthedocs.io/en/latest/build.html) clone源码，并安装python包。（不详述）<br><br>
 配置train_dir/config.py中的参数，包括：1）XGBoostConifg中的与xgboost模型相关的参数（参数含义详见下文的调参心得)；2）Config中的与输入输出及其它训练相关的参数；<br><br>
 配置完参数后运行sh run.sh即可训练、验证并测试模型，程序会保存训练好的模型，将训练好的模型拷贝到deploy/c++目录下即可在线预测<br><br>
 ##### 在线预测
-deploy/c++目录下运行make编译代码，然后运行./test_xgb_cls即可预测demo，预测之前先配置conf/xgb_cls.conf，包括模型路径、特征维度、树数量；若要把在线预测代码集成在自己的代码中，只需要拷贝 include/, lib/, xgboost_classifier.h, xgboost_classifier.cpp即可<br><br>
-#### xgboost使用心得
+deploy/c++目录下运行make编译代码，然后运行./test_xgb_cls即可运行预测demo，预测之前先配置conf/xgb_cls.conf，包括模型路径、特征维度、树数量；若要把在线预测代码集成在自己的代码中，只需要拷贝 include/, lib/, xgboost_classifier.h, xgboost_classifier.cpp即可<br><br>
+#### XGBoost使用心得
 ##### 调参心得
 booster：指明使用的基分类器，默认为gbtree，还可以选择gblinear和dart。gbtree则表示CART树，gblinear表示线性分类器，dart也是使用CART作为基分类器，只不过对各个CART树使用类似于nn里的drop-out，可以配置rate_drop来指明drop-out的比例；一般情况下，都使用默认的gbtree;<br><br>
 eta：收缩因子，或者学习率，每颗树的结果乘以eta为样本在这颗树的最终得分，eta一般小于1，eta越小，后续基分类器的学习空间就更大，同时也可以避免过拟合，如果发现树的颗树比较少，可以适当调低eta；默认值为0.3；<br><br>
-gamma：参数中的gamma不是公式中的L1正则化系数（L1正则化系数对应的为alpha），而是最小的分类损失降低，只有当节点分裂带来的损失降低大于gamma时才进行分裂，可以有效避免过拟合；默认值为0，**注意**：因为有正则化项的存在，分裂节点不一定能带来正向的损失减小，所以gamma为0不一定表示所有的分裂均满足要求（均能分裂）；<br><br>
+gamma：参数中的gamma不是公式中的L1正则化系数（L1正则化系数对应的参数为alpha），而是最小的分类损失降低(loss reduction)，只有当节点分裂带来的损失降低大于gamma时才进行分裂，可以有效避免过拟合；默认值为0，**注意**：因为有正则化项的存在（特别是L1正则化），分裂节点不一定能带来正向的损失减小，所以gamma为0不一定表示所有的分裂均满足要求（均能分裂）；<br><br>
 max_depth：树的最大深度，这个比较好理解；默认值为6，如果过拟合严重，可以适当减小该参数值；<br><br>
-subsample：生成下一颗树时训练样本的采样率，类似随机森林，默认为1，如果样本数量比较大或者过拟合严重，可以考虑减小该参数值；<br><br>
-colsample_bytree：生成每一颗树时对特征的采样率，类似随机森林，默认为1<br><br>
+subsample：生成下一颗树时训练样本的采样率(row subsampling)，类似随机森林，默认为1，如果样本数量比较大或者过拟合严重，可以考虑减小该参数值；<br><br>
+colsample_bytree：生成每一颗树时对特征的采样率(column subsampling)，类似随机森林，默认为1；<br><br>
 colsample_bylevel：生成每一层时特征的采用率，在每颗树的特征的基础上采样，colsample_bytree\*colsample_bylevel，默认值为1<br><br>
 colsample_bynode：节点分裂时特征的采样率，在每颗树、每层的基础上采样，colsample_bytree\*colsample_bylevel\*colsample_bynode，默认值为1<br><br>
 lambda：叶子节点输出值的L2正则化系数，默认为1<br><br>
 alpha：叶子节点输出值的L1正则化系数，默认为0，即不做L1正则化系数<br><br>
-objective：目标函数，默认为reg:squarederror，可以取binary:logistic/multi:softmax/rank:pairwise等；我在最先调参的时候使用reg:squarederror，而线上的xgboost版本比较老旧，不支持此目标函数，因此只能换成binary:logistic重新训练，换成binary:logistic并且early-stop的eval_metric选用auc反倒效果变好，分析原因为：我的任务中正负例样本比例悬殊比较大，使用rmse、error等对正负例敏感的eval_metric反倒效果不好，auc的含义及计算方法见[机器学习一般流程总结](../NLP/3_ml_process.md)；<br><br>
-base_score：样本的初始得分，相当于全局偏置，默认值为0.5<br><br>
-eval_metric：验证集的metric，在训练的日志中能看到train和eval的metric；根据目标函数设置默认值；<br><br>
+objective：目标函数，默认为reg:squarederror，即平方误差；可以取binary:logistic/multi:softmax/rank:pairwise等；我在最先调参的时候使用reg:squarederror，而线上的xgboost版本比较老旧，不支持此目标函数，因此只能换成binary:logistic重新训练，换成binary:logistic并且early-stop的eval_metric选用auc反倒效果变好，分析原因为：我的任务中正负例样本比例悬殊比较大，使用rmse、error等对正负例敏感的eval_metric反倒效果不好，auc的含义及计算方法见[机器学习一般流程总结](../NLP/3_ml_process.md)；<br><br>
+base_score：样本的初始得分，相当于全局偏置，默认值为0.5；<br><br>
+eval_metric：验证集的metric，在训练的日志中能看到train和eval的metric；候选值有rmse（均方误差根）、error（分类错误率）、auc、ndcg等；根据目标函数的不同设置默认值；<br><br>
 enable_early_stop：是否使用early-stop，一般都需要使用验证集做训练时的验证和早停避免过拟合，也可以通过早停的情况了解自己的模型是否过拟合了；如果在xgb.train()的参数中指名了使用早停，则必须要指定evals列表；<br><br>
 early_stopping_rounds：eval_metric在early_stopping_rounds轮没有增加或减少则停止训练，一般设置为10轮；<br><br>
 ##### xgboost有哪些优点
