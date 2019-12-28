@@ -41,7 +41,7 @@ colsample_bylevel：生成每一层时特征的采用率，在每颗树的特征
 colsample_bynode：节点分裂时特征的采样率，在每颗树、每层的基础上采样，colsample_bytree\*colsample_bylevel\*colsample_bynode，默认值为1<br><br>
 lambda：叶子节点输出值的L2正则化系数，默认为1<br><br>
 alpha：叶子节点输出值的L1正则化系数，默认为0，即不做L1正则化系数<br><br>
-tree_method：构建树算法，候选值有exact、approx、hist、auto等，exact代表论文中的Basic Exact greedy algorithm，即每次生成孩子节点时遍历所有的特征点的所有可能的分裂点，从而找到最优分裂点；approx表示带权的分位点分割算法，由（泰勒展开后的）损失函数可以推导出每个样本的损失是带权的平方误差，其权重为二阶导数，而分位点算法是为了节省计算时间而提出的近似计算方法，将样本划分到多个bucket中，各个bucket之间有序，但bucket中的元素不需要有序，划分点就是每个bucket中最大值，使用分位点算法可以将候选划分点减小至m个（m表示bucket的个数），生成bucket的时候每个样本都是有权重的，权重为二阶导数；hist表示基于bin strategy的近似算法，具体原理还有待研究；auto表示根据数据量自动选择tree_method，数据量小时选择exact，数据量大时选择approx；<br><br>
+tree_method：构建树算法，候选值有exact、approx、hist、auto等，exact代表论文中的Basic Exact greedy algorithm，即每次生成孩子节点时遍历所有的特征的所有可能的分裂点，从而找到最优分裂点；approx表示带权的分位点分割算法，由（泰勒展开后的）损失函数可以推导出每个样本的损失是带权的平方误差，其权重为样本的二阶导数，而分位点算法是为了节省计算时间而提出的近似计算方法，将样本划分到多个bucket中，各个bucket之间有序，但bucket中的元素不需要有序，划分点就是每个bucket中最大值，使用分位点算法可以将候选划分点减小至m个（m表示bucket的个数），生成bucket的时候每个样本都是有权重的，权重为二阶导数；hist表示基于bin strategy的近似算法，具体原理还有待研究；auto表示根据数据量自动选择tree_method，数据量小时选择exact，数据量大时选择approx；<br><br>
 sketch_eps：当tree_method=approx时用于指明近似误差的大小，一般可以认为最终的bucket个数为O(1 / sketch_eps)，因此sketch_eps越小，approx越接近exact；<br><br>
 objective：目标函数，默认为reg:squarederror，即平方误差；可以取binary:logistic/multi:softmax/rank:pairwise等；我在最先调参的时候使用reg:squarederror，而线上的xgboost版本比较老旧，不支持此目标函数，因此只能换成binary:logistic重新训练，换成binary:logistic并且early-stop的eval_metric选用auc反倒效果变好，分析原因为：我的任务中正负例样本比例悬殊比较大，使用rmse、error等对正负例敏感的eval_metric反倒效果不好，auc的含义及计算方法见[机器学习一般流程总结](../NLP/3_ml_process.md)；<br><br>
 base_score：样本的初始得分，相当于全局偏置，默认值为0.5；<br><br>
