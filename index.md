@@ -8,6 +8,7 @@
 #### [预训练词表示之word2vec(一)](NLP/4_word2vec.md)
 #### [序列标注之Bi-LSTM+CRF](NLP/4_tagging_bi_lstm_crf.md)
 #### [深入浅出Attention和Transformer](NLP/2_attention_transformer.md)
+#### [使用pytorch融合多模型结果](NLP/7_pytorch_model_fusion.md)
 #### [正负例样本失衡及focal loss](NLP/focal_loss.md)
 
 ### 数据结构
