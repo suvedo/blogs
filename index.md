@@ -17,7 +17,7 @@
 
 ### 并行计算
 #### [bthread源码阅读](cpp/1_bthread_code.md)
-#### [CUDA并行计算](NLP/7_cuda.md)
+#### [CUDA并行计算](NLP/8_cuda_pp.md)
 
 ### LeetCode
 #### [LeetCode 456. 132 Pattern](leetcode/LeetCode_456_132_Pattern.md)
