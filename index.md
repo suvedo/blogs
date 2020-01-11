@@ -16,8 +16,8 @@
 #### [字典树的五种实现方式](data_structure/2_trie_tree.md)
 
 ### 并行计算
-#### [bthread源码阅读](cpp/1_bthread_code.md)
 #### [CUDA并行计算](NLP/8_cuda_pp.md)
+#### [bthread源码阅读](cpp/1_bthread_code.md)
 
 ### LeetCode
 #### [LeetCode 456. 132 Pattern](leetcode/LeetCode_456_132_Pattern.md)
