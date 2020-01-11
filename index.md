@@ -17,6 +17,7 @@
 
 ### 并行计算
 #### [CUDA并行计算](NLP/8_cuda_pp.md)
+#### [Nvidia GPU硬件理解](NLP/9_nv_gpu.md)
 #### [bthread源码阅读](cpp/1_bthread_code.md)
 
 ### LeetCode
