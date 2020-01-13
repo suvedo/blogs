@@ -6,7 +6,7 @@
 例如，在中文分词任务中，模型为每个字打上s/b/m/e等标签，分别表示单字成词、词语起始字、词语中间字、词语结尾字，将标签b/m/e结合起来就成了一个中文词，而s则单独分成一个中文词。<br><br>
 解决序列标注问题常用的方法有HMM、MEMM、CRF、LSTM等，目前工业上比较成熟的方案是Bi-LSTM+CRF，
 2018年google提出了BERT作为预训练词向量模型，其具有比Bi-LSTM更强的特征学习能力，因此现在很多公司也在尝试使用BERT+CRF做序列标注任务，
-但BERT+CRF需要大量的预训练语料，在某些场景下不如Bi-LSTM+CRF性能好，因此本文主要讲解Bi-LSTM+CRF的方案。<br>
+但BERT+CRF需要大量的预训练语料，且由于模型体积比较大，在部署的时候存在推理时间慢的问题，因此本文主要讲解Bi-LSTM+CRF的方案。<br>
 #### CRF
 Lafferty等人在2001年的[Conditional Random Fields: Probabilistic Models for Segmenting and Labeling Sequence Data](http://repository.upenn.edu/cgi/viewcontent.cgi?article=1162&context=cis_papers)中提出CRF，
 CRF在POS（词性标注）任务中战胜了HMM和MEMM，从此开启了CRF在序列标注任务中的统治地位。<br><br>
