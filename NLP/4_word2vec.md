@@ -37,7 +37,7 @@ Skip-gram的计算复杂度为 Q = C x (D + D x log<sub>2</sub>(V))，其中C是
 其中v<sub>w</sub>和v<sub>w</sub><sup>'</sup>分别表示词w的输入词向量和输出词向量，也就是说同一个词w有两个词向量，分别为输入词向量v<sub>w</sub>和输出词向量v<sub>w</sub><sup>'</sup>，由前文分析可知，这个概率的计算复杂度很高，不利于大数据集上训练。上文的分层softmax可以将输出层的计算维度从V减小到log<sub>2</sub>V，但如果每个词的词频很低，其编码长度较长，计算复杂度也比较高。output层除了可以使用分层softmax之外，还可以使用负采样的方法，google第二篇关于word2vec的论文[Distributed Representations of Words and Phrases and their Compositionality](https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf)提出了该方法。<br><br>
 负采样(NEG)方法源于NCE(Noise Contrastive Estimation)，NEG比NCE更加简单，不需要最大化softmax的输出，只需要训练高质量的词向量即可，负采样的目标函数表示如下：<br>
 ![w2v_neg_loss2](../images/NLP/4_word2vec/w2v_neg_loss2.png)<br>
-其中，P<sub>n</sub>(w)是采样分布函数，论文中选取均匀分布的3/4次方：U(w)<sup>3/4</sup>/Z；k是负例数量，训练数据量较小时，k取5到20之间，数据量较大时，k取2到5之间；该目标函数其实是使用逻辑回归来分类正例和负例，但是把同一个词的正例和负例的得分相加一起作为目标函数，采用负采样+逻辑回归替换原始的softmax可以极大降低计算量（可能损失一些精度）；模型的目标是最大化上述目标函数从而学习词表示。<br>
+其中，P<sub>n</sub>(w)是采样分布函数，论文中选取均匀分布的3/4次方：U(w)<sup>3/4</sup>/Z；k是负例数量，训练数据量较小时，k取5到20之间，数据量较大时，k取2到5之间；该目标函数其实是使用逻辑回归来分类正例和负例（V分类问题转化二分类问题），但是把同一个词的正例和负例的得分相加一起作为目标函数，采用负采样+逻辑回归替换原始的softmax可以极大降低计算量（可能损失一些精度）；模型的目标是最大化上述目标函数从而学习词表示。<br>
 ### 总结
 word2vec提出了两种简单、高效的词向量模型CBOW和Skip-gram，和一种速度更快、性能更好的词向量训练方法Negative sampling。利用word2vec在大规模数据上训练的词向量能捕捉词在语义(semantic)和句法(syntatic)上的相似性，通过word2vec训练的词向量具有一定的聚类功能（语义相似的词在向量空间中距离更近），利用预训练的词向量可以提升分类、序列标注、序列转换等NLP任务的性能。除此之外，词向量的代数减法和代数加法具有实际意义，进一步反应了词向量的合理性。虽然现在看来word2vec已经过时了，但通过word2vec可以深入理解学者们是怎样建模词向量，并且高效的训练它们的，word2vec的提出使得利用大规模的无监督语料提取词特征、句子特征成为可能，也为后续研究打下了基础。本系列后续文章会讲解应用更加广泛的GloVe和目前更为流行的ELMo、GPT、BERT等。<br>
 ### 参考文献
